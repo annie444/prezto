@@ -1,13 +1,44 @@
-#
-# Executes commands at the start of an interactive session.
-#
-# Authors:
-#   Sorin Ionescu <sorin.ionescu@gmail.com>
-#
+export ZDOTDIR="$HOME/.dotfiles"
 
-# Source Prezto.
+for FILE in "${ZDOTDIR:-$HOME}/."{path,functions,aliases,exports,extra,zprompt,secret}; do 
+  [ -r "$FILE" ] && [ -f "$FILE" ] && source "$FILE"
+done
+
 if [[ -s "${ZDOTDIR:-$HOME}/.zprezto/init.zsh" ]]; then
   source "${ZDOTDIR:-$HOME}/.zprezto/init.zsh"
+fi 
+
+source "${ZDOTDIR:-$HOME}/.antigenrc"
+
+export PYENV_ROOT="$HOME/.pyenv"
+if command -v pyenv 1>/dev/null 2>&1; then
+  eval "$(pyenv init -)"
 fi
 
-# Customize to your needs...
+eval "$(pyenv virtualenv-init -)"
+
+# Load p10k instant prompt. Should stay close to the top of ~/.zshrc.
+if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):%n}.zsh" ]]; then
+  source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):%n}.zsh"
+fi 
+
+# Highlight the current selection
+zstyle ':completion:*' list-colors ${(s.:.)LS_COLORS}
+
+# Better SSH/Rsync/SCP Autocomplete
+zstyle ':completion:*:(scp|rsync):*' tag-order ' hosts:-ipaddr:ip\ address hosts:-host files'
+zstyle ':completion:*:(ssh|scp|rsync):*:hosts-host' ignored-patterns '*(.|:)*' loopback ip6-loopback localhost ip6-localhost broadcast
+zstyle ':completion:*:(ssh|scp|rsync):*:hosts-ipaddr' ignored-patterns '^(<->.<->.<->.<->|(|::)([[:xdigit:].]##:(#c,2))##(|%*))' '127.0.0.<->' '255.255.255.255' '::1' 'fe80::*'
+
+# Make autocomplete case insensitive
+zstyle ':completion:*' matcher-list 'm:{[:lower:][:upper:]}={[:upper:][:lower:]}' '+l:|?** r:|?=**'
+
+autoload -Uz compinit && compinit -i
+
+# make sure menu selection is on
+zstyle ':completion:*' menu select
+zstyle ':completion:*' rehash true
+
+[[ ! -f "${ZDOTDIR:-$HOME}/.p10k.zsh" ]] || source "${ZDOTDIR:-$HOME}/.p10k.zsh" ]]
+[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh 
+
